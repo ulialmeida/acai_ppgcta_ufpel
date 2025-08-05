@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrixes Database</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/matrixes.css') }}">
+    <!-- Adicione Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Estilos para os botões de ação */
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-right: 5px;
+            display: inline-block;
+        }
+        
+        .edit-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .delete-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .action-form {
+            display: inline;
+        }
+        
+        /* Estilo para o nome científico em itálico */
+        .scientific-name {
+            font-style: italic;
+        }
+        
+        /* Estilo para a coluna de nome popular */
+        .common-name {
+            font-weight: normal;
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Matrixes Database</h1>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+        {% endif %}
+    </div>
+
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Espécie</th>
+                    <th>Nome Popular</th>
+                    <th>Parte da Planta</th>
+                    {% if current_user.is_authenticated %}
+                        <th>Ações</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for matrix in matrixes %}
+                    <tr>
+                        <td>{{ matrix.matrixes_id }}</td>
+                        <td>
+                            <a href="{{ url_for('view_matrix_compounds', matrix_id=matrix.matrixes_id) }}">
+                                <span class="scientific-name">{{ matrix.organism }}</span>
+                            </a>
+                        </td>
+                        <td class="common-name">
+                            <!-- Campo para nome popular (não será armazenado) -->
+                            <input type="text" placeholder="Nome popular" class="common-name-input" 
+                                   style="border: 1px solid #ddd; padding: 5px; width: 150px;">
+                        </td>
+                        <td>{{ matrix.plant_tissue }}</td>
+                        {% if current_user.is_authenticated %}
+                            <td class="actions">
+                                <!-- Botão de Editar -->
+                                <a href="{{ url_for('edit_matrix', matrix_id=matrix.matrixes_id) }}" 
+                                   class="action-btn edit-btn">
+                                   <i class="fas fa-edit"></i> Editar
+                                </a>
+                                
+                                <!-- Formulário de Delete -->
+                                <form class="action-form" method="POST" action="{{ url_for('delete_matrix') }}">
+                                    <input type="hidden" name="matrix_id" value="{{ matrix.matrixes_id }}">
+                                    <button type="submit" class="action-btn delete-btn" 
+                                            onclick="return confirm('Tem certeza que deseja excluir esta matriz?')">
+                                        <i class="fas fa-trash"></i> Excluir
+                                    </button>
+                                </form>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if current_user.is_authenticated %}
+            <div class="add-matrix">
+                <h2>Adicionar Matriz</h2>
+                <form method="POST" action="{{ url_for('add_matrix') }}">
+                    <div class="form-group">
+                        <label for="organism">Espécie (nome científico):</label>
+                        <input type="text" name="organism" required>    
+                    </div>
+                    <div class="form-group">
+                        <label for="plant_tissue">Parte da Planta:</label>
+                        <input type="text" name="plant_tissue" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Adicionar</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="navigation">
+        <a href="{{ url_for('index') }}">Voltar para Compostos</a>
+    </div>
+
+    <script>
+        // Opcional: Se quiser que o nome popular persista durante a sessão
+        document.addEventListener('DOMContentLoaded', function() {
+            // Recupera os nomes populares salvos no localStorage
+            document.querySelectorAll('.common-name-input').forEach(input => {
+                const matrixId = input.closest('tr').querySelector('td:first-child').textContent;
+                const savedName = localStorage.getItem(`commonName_${matrixId}`);
+                if (savedName) {
+                    input.value = savedName;
+                }
+                
+                // Salva quando o usuário digitar
+                input.addEventListener('change', function() {
+                    localStorage.setItem(`commonName_${matrixId}`, this.value);
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

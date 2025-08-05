@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+    <style>
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        /* Estilos adicionais específicos para esta página */
+        .form-section {
+            margin-bottom: 2rem;
+        }
+    </style>
+    <h1 class="text-center mb-4">Editar Análise #{{ analytic.analytics_id }}</h1>
+    
+    <form method="POST" action="{{ url_for('edit_analytic', id=analytic.analytics_id) }}">
+        <!-- Seção 1: Identificação Básica -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Informações Básicas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label required-field">Composto</label>
+                        <select name="compound_id" class="form-select" required>
+                            <option value="">Selecione um composto</option>
+                            {% for compound in compounds %}
+                                <option value="{{ compound.compound_id }}" 
+                                    {% if compound.compound_id == analytic.compound_id %}selected{% endif %}>
+                                    {{ compound.compound }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label required-field">Matriz</label>
+                        <select name="matrix_id" class="form-select" required>
+                            <option value="">Selecione uma matriz</option>
+                            {% for matrix in matrixes %}
+                                <option value="{{ matrix.matrixes_id }}" 
+                                    {% if matrix.matrixes_id == analytic.matrix_id %}selected{% endif %}>
+                                    {{ matrix.organism }} ({{ matrix.plant_tissue }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label required-field">Método Instrumental</label>
+                        <select name="instrument_method" class="form-select" required>
+                            <option value="">Selecione o método...</option>
+                            <optgroup label="Cromatografia Líquida">
+                                <option value="HPLC-DAD" {% if analytic.instrument_method == 'HPLC-DAD' %}selected{% endif %}>HPLC-DAD</option>
+                                <option value="HPLC-UV" {% if analytic.instrument_method == 'HPLC-UV' %}selected{% endif %}>HPLC-UV</option>
+                                <option value="UFLC-MS" {% if analytic.instrument_method == 'UFLC-MS' %}selected{% endif %}>UFLC-MS</option>
+                                <option value="HPLC-MS/MS" {% if analytic.instrument_method == 'HPLC-MS/MS' %}selected{% endif %}>HPLC-MS/MS</option>
+                                <option value="HPLC-ELSD" {% if analytic.instrument_method == 'HPLC-ELSD' %}selected{% endif %}>HPLC-ELSD</option>
+                            </optgroup>
+                            <optgroup label="Cromatografia Gasosa">
+                                <option value="GC-MS" {% if analytic.instrument_method == 'GC-MS' %}selected{% endif %}>GC-MS</option>
+                                <option value="GC-FID" {% if analytic.instrument_method == 'GC-FID' %}selected{% endif %}>GC-FID</option>
+                                <option value="GC-ECD" {% if analytic.instrument_method == 'GC-ECD' %}selected{% endif %}>GC-ECD</option>
+                            </optgroup>
+                            <optgroup label="Espectrometria de Massa">
+                                <option value="MALDI-TOF" {% if analytic.instrument_method == 'MALDI-TOF' %}selected{% endif %}>MALDI-TOF</option>
+                                <option value="ESI-MS" {% if analytic.instrument_method == 'ESI-MS' %}selected{% endif %}>ESI-MS</option>
+                                <option value="Q-TOF" {% if analytic.instrument_method == 'Q-TOF' %}selected{% endif %}>Q-TOF</option>
+                                <option value="Orbitrap" {% if analytic.instrument_method == 'Orbitrap' %}selected{% endif %}>Orbitrap</option>
+                            </optgroup>
+                            <optgroup label="Outros">
+                                <option value="CE-MS" {% if analytic.instrument_method == 'CE-MS' %}selected{% endif %}>CE-MS</option>
+                                <option value="TLC" {% if analytic.instrument_method == 'TLC' %}selected{% endif %}>TLC</option>
+                                <option value="OTHER" {% if analytic.instrument_method == 'OTHER' %}selected{% endif %}>Outro (especificar)</option>
+                            </optgroup>                   
+                         </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Classe do Composto</label>
+                        <select name="compound_class" class="form-select">
+                            <option value="">Selecione uma classe</option>
+                            <optgroup label="Primários">
+                                <option value="amino_acid" {% if analytic.compound_class == 'amino_acid' %}selected{% endif %}>Aminoácido</option>
+                                <option value="carbohydrate" {% if analytic.compound_class == 'carbohydrate' %}selected{% endif %}>Carboidrato</option>
+                                <option value="organic_acid" {% if analytic.compound_class == 'organic_acid' %}selected{% endif %}>Ácido orgânico</option>
+                                <option value="lipid" {% if analytic.compound_class == 'lipid' %}selected{% endif %}>Lipídeo</option>
+                            </optgroup>
+                            <optgroup label="Secundários">
+                                <option value="alkaloid" {% if analytic.compound_class == 'alkaloid' %}selected{% endif %}>Alcaloide</option>
+                                <option value="anthocyanin" {% if analytic.compound_class == 'anthocyanin' %}selected{% endif %}>Antocianina</option>
+                                <option value="flavonoid" {% if analytic.compound_class == 'flavonoid' %}selected{% endif %}>Flavonoide</option>
+                                <option value="terpenoid" {% if analytic.compound_class == 'terpenoid' %}selected{% endif %}>Terpenoide</option>
+                                <option value="phenolic" {% if analytic.compound_class == 'phenolic' %}selected{% endif %}>Fenólico</option>
+                                <option value="glycoside" {% if analytic.compound_class == 'glycoside' %}selected{% endif %}>Glicosídeo</option>
+                                <option value="saponin" {% if analytic.compound_class == 'saponin' %}selected{% endif %}>Saponina</option>
+                                <option value="lignan" {% if analytic.compound_class == 'lignan' %}selected{% endif %}>Lignana</option>
+                                <option value="coumarin" {% if analytic.compound_class == 'coumarin' %}selected{% endif %}>Cumarina</option>
+                            </optgroup>
+                            <optgroup label="Outros">
+                                <option value="peptide" {% if analytic.compound_class == 'peptide' %}selected{% endif %}>Peptídeo</option>
+                                <option value="steroid" {% if analytic.compound_class == 'steroid' %}selected{% endif %}>Esteróide</option>
+                                <option value="nucleotide" {% if analytic.compound_class == 'nucleotide' %}selected{% endif %}>Nucleotídeo</option>
+                                <option value="xenobiotic" {% if analytic.compound_class == 'xenobiotic' %}selected{% endif %}>Xenobiótico</option>
+                            </optgroup>
+                         </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção 2: Dados Analíticos -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Dados Analíticos</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label required-field">Tempo de Retenção (s)</label>
+                        <input type="number" step="0.01" name="retention_time" class="form-control" 
+                               value="{{ analytic.retention_time }}" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label required-field">m/z</label>
+                        <input type="number" step="0.0001" name="m_z" class="form-control" 
+                               value="{{ analytic.m_z }}" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label required-field">Intensidade</label>
+                        <input type="number" name="intensity" class="form-control" 
+                               value="{{ analytic.intensity }}" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Sigma</label>
+                        <input type="number" step="0.01" name="sigma" class="form-control" 
+                               value="{{ analytic.sigma }}">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Fragmento (m/z)</label>
+                        <input type="number" step="0.0001" name="fragment" class="form-control"
+                               value="{{ analytic.fragment }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Modo de Ionização</label>
+                        <select name="ionization_mode" class="form-select">
+                            <option value="">Não aplicável</option>
+                            <option value="positive" {% if analytic.ionization_mode == 'positive' %}selected{% endif %}>Positivo (+)</option>
+                            <option value="negative" {% if analytic.ionization_mode == 'negative' %}selected{% endif %}>Negativo (-)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Energia de Colisão (eV)</label>
+                        <input type="number" step="0.1" name="collision_energy" class="form-control"
+                               value="{{ analytic.collision_energy }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <!-- Seção: Fragmentos -->
+            <div class="card mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Fragmentos (m/z e Intensidade)</h5>
+                </div>
+                <div class="card-body">
+                    {% if analytic.fragments %}
+                        {% for fragment in analytic.fragments %}
+                            <div class="row mb-2">
+                                <input type="hidden" name="fragment_ids[]" value="{{ fragment.id }}">
+                                
+                                <div class="col-md-5">
+                                    <label class="form-label">m/z do Fragmento</label>
+                                    <input type="number" step="0.0001" name="fragment_mz[]" class="form-control" value="{{ fragment.m_z }}">
+                                </div>
+                                
+                                <div class="col-md-5">
+                                    <label class="form-label">Intensidade</label>
+                                    <input type="number" step="0.01" name="fragment_intensity[]" class="form-control" value="{{ fragment.intensity }}">
+                                </div>
+                                
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <a href="{{ url_for('delete_fragment', id=fragment.id) }}" 
+                                    class="btn btn-outline-danger btn-sm"
+                                    onclick="return confirm('Tem certeza que deseja excluir este fragmento?');">
+                                        Remover
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>Nenhum fragmento cadastrado para esta análise.</p>
+                    {% endif %}
+
+                    <hr>
+
+                    <div id="new-fragment-container">
+    <div class="row mb-2">
+        <div class="col-md-5">
+            <input type="number" step="0.0001" name="new_fragment_mz[]" class="form-control" placeholder="Novo m/z">
+        </div>
+        <div class="col-md-5">
+            <input type="number" step="0.01" name="new_fragment_intensity[]" class="form-control" placeholder="Nova Intensidade">
+        </div>
+    </div>
+</div>
+
+<button type="button" class="btn btn-outline-success btn-sm" onclick="addFragmentField()">+ Adicionar mais fragmento</button>
+
+<script>
+function addFragmentField() {
+    const container = document.getElementById('new-fragment-container');
+    const newField = document.createElement('div');
+    newField.classList.add('row', 'mb-2');
+    newField.innerHTML = `
+        <div class="col-md-5">
+            <input type="number" step="0.0001" name="new_fragment_mz[]" class="form-control" placeholder="Novo m/z">
+        </div>
+        <div class="col-md-5">
+            <input type="number" step="0.01" name="new_fragment_intensity[]" class="form-control" placeholder="Nova Intensidade">
+        </div>
+    `;
+    container.appendChild(newField);
+}
+</script>
+
+
+
+        <!-- Seção 3: Metadados -->
+        <div class="card mb-4 border-secondary">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Metadados</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Descrição do Método</label>
+                    <input type="text" name="method_description" class="form-control"
+                           value="{{ analytic.method_description }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Condição Cromatográfica</label>
+                    <input type="text" name="chromatographic_condition" class="form-control"
+                           value="{{ analytic.chromatographic_condition }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notas</label>
+                    <textarea name="notes" class="form-control" rows="3">{{ analytic.notes }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('analytics_view') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Salvar Alterações
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

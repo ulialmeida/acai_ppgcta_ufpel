@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="edit-container">
+    <h2>Editar Matriz</h2>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label>Espécie (nome científico):</label>
+            <input type="text" name="organism" value="{{ matrix.organism }}" required class="scientific-name-input">
+            <small>Será exibido em itálico na lista</small>
+        </div>
+        
+        <div class="form-group">
+            <label>Nome popular:</label>
+            <input type="text" name="common_name" id="common_name" class="common-name-input" 
+                   placeholder="Nome popular (opcional)" style="font-style: normal;">
+            <small>Este campo não será armazenado no banco de dados</small>
+        </div>
+        
+        <div class="form-group">
+            <label>Parte/Produto derivado:</label>
+            <input type="text" name="plant_tissue" value="{{ matrix.plant_tissue }}" required>
+        </div>
+        
+        <button type="submit" class="submit-btn">Salvar Alterações</button>
+        <a href="{{ url_for('matrixes') }}" class="cancel-btn">Cancelar</a>
+    </form>
+</div>
+
+<script>
+    // Opcional: Carrega o nome popular salvo no localStorage
+    document.addEventListener('DOMContentLoaded', function() {
+        const commonNameInput = document.getElementById('common_name');
+        const matrixId = "{{ matrix.matrixes_id }}";
+        const savedName = localStorage.getItem(`commonName_${matrixId}`);
+        
+        if (savedName) {
+            commonNameInput.value = savedName;
+        }
+        
+        // Salva quando o usuário digitar
+        commonNameInput.addEventListener('change', function() {
+            localStorage.setItem(`commonName_${matrixId}`, this.value);
+        });
+    });
+</script>
+
+<style>
+    .scientific-name-input {
+        font-style: italic;
+    }
+    
+    .common-name-input {
+        font-style: normal;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .form-group small {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 0.8em;
+    }
+    
+    .submit-btn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .cancel-btn {
+        display: inline-block;
+        margin-left: 10px;
+        padding: 10px 15px;
+        background-color: #f44336;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}

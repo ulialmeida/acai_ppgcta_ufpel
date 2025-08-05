@@ -1,0 +1,78 @@
+<form method="POST" action="/prever">
+  <div id="fragmentos">
+    <div class="fragmento">
+      <label>Fragment m/z:</label>
+      <input name="fragment_mz" type="number" step="any" required>
+      <label>Intensidade:</label>
+      <input name="fragment_intensity" type="number" step="any">
+      <button type="button" onclick="remover(this)">−</button>
+    </div>
+  </div>
+  <button type="button" onclick="adicionar()">+ Adicionar Fragmento</button>
+  <br><br>
+  <button type="submit">Prever</button>
+</form>
+
+<script>
+function adicionar() {
+  const div = document.createElement('div');
+  div.className = 'fragmento';
+  div.innerHTML = `
+    <label>Fragment m/z:</label>
+    <input name="fragment_mz" type="number" step="any" required>
+    <label>Intensidade:</label>
+    <input name="fragment_intensity" type="number" step="any">
+    <button type="button" onclick="remover(this)">−</button>
+  `;
+  document.getElementById('fragmentos').appendChild(div);
+}
+
+function remover(botao) {
+  botao.parentElement.remove();
+}
+</script>
+
+{% if sugestoes %}
+  <h3>Compostos semelhantes encontrados:</h3>
+  <table border="1">
+    <tr>
+      <th>Nome</th>
+      <th>m/z</th>
+      <th>Intensidade</th>
+      <th>Score</th>
+    </tr>
+    {% for s in sugestoes %}
+    <tr>
+      <td>{{ s.compound_name }}</td>
+      <td>{{ "%.4f"|format(s.fragment_mz) }}</td>
+      <td>{{ "%.2f"|format(s.fragment_intensity or 0) }}</td>
+      <td>{{ "%.2f"|format(s.score) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+{% if resultados %}
+  <h3>Resultados encontrados:</h3>
+  <table border="1">
+    <tr>
+      <th>Nome</th>
+      <th>ID</th>
+      <th>m/z</th>
+      <th>Intensidade</th>
+      <th>Score</th>
+    </tr>
+    {% for r in resultados %}
+    <tr>
+      <td><a href="{{ url_for('ver_analises', compound_id=r.compound_id) }}">{{ r.compound_name }}</a></td>
+      <td>{{ r.compound_id }}</td>
+      <td>{{ r.m_z }}</td>
+      <td>{{ r.intensity }}</td>
+      <td>{{ r.score | round(2) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+
+

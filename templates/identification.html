@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identification.css') }}">
+</head>
+<body>
+   
+    <div class="header">
+        <h1>Identification</h1>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('login') }}">Login</a>
+        {% endif %}
+    </div>
+
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Compound ID</th>
+                    <th>Matrix ID</th>
+                    <th>Name ID</th>
+                    {% if current_user.is_authenticated %}
+                        <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for identification in identifications %}
+                <tr>
+                    <td>{{ identification.compound_id }}</td>
+                    <td>{{ identification.matrix_id }}</td>
+                    <td>{{ identification.name_id }}</td>
+                    <td>
+                        {% if current_user.is_authenticated %}
+                            <!-- Formulário para excluir a identificação -->
+                            <form method="POST" action="{{ url_for('delete_identification') }}">
+                                <input type="hidden" name="compound_id" value="{{ identification.compound_id }}">
+                                <input type="hidden" name="matrix_id" value="{{ identification.matrix_id }}">
+                                <input type="hidden" name="name_id" value="{{ identification.name_id }}">
+                                <button type="submit">Excluir</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <div class="add-identification">
+        <h2>Add Identification</h2>
+        <form method="POST" action="{{ url_for('add_identification') }}">
+            <label for="compound_id">Compound ID:</label>
+            <input type="number" name="compound_id" required><br>
+            <label for="matrix_id">Matrix ID:</label>
+            <input type="number" name="matrix_id" required><br>
+            <label for="name_id">Name ID:</label>
+            <input type="number" name="name_id" required><br>
+            <input type="submit" value="Add Identification">
+        </form>
+    </div>
+
+    <div class="navigation">
+        <a href="{{ url_for('entrada') }}">Home |</a>
+        <a href="{{ url_for('index') }}">Compounds |</a>
+        <a href="{{ url_for('matrixes') }}">Matrixes |</a>
+        <a href="{{ url_for('name')}}">Autores</a>
+    </div>
+
+</body>
+</html>

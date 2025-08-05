@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscar Compostos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .search-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            transition: background 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .search-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Escolha o tipo de busca</h1>
+    <div class="button-container">
+        <a href="{{ url_for('buscar_por_massa') }}">
+            <button class="search-button">🔬 Buscar por Massa</button>
+        </a>
+        <a href="{{ url_for('formulario_fragmentos') }}">
+            <button class="search-button">📈 Buscar por Intensidade</button>
+        </a>
+    </div>
+</body>
+</html>

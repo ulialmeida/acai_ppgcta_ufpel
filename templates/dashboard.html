@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de Compostos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f2f2f2;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .chart-container {
+            width: 80%;
+            max-width: 900px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #listaCompleta, #listaMatrizes {
+            width: 80%;
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #006699;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #00557a;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard de Compostos</h1>
+    
+    <!-- Seção de Compostos -->
+    <div class="chart-container">
+        <h2>Top 10 Compostos Mais Identificados</h2>
+        <canvas id="graficoCompostos"></canvas>
+    </div>
+
+    <button id="btnLista">Veja + Compostos</button>
+
+    <div id="listaCompleta">
+        <h2>Lista Completa de Compostos</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Composto</th>
+                    <th>Quantidade de Identificações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in compostos_mais_identificados %}
+                <tr>
+                    <td>{{ item.compound }}</td>
+                    <td>{{ item.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Seção de Matrizes -->
+    <div class="chart-container">
+        <h2>Top 5 Matrizes que Mais Identificaram Compostos</h2>
+        <canvas id="graficoMatrizes"></canvas>
+    </div>
+
+    <button id="btnListaMatrizes">Veja + Matrizes</button>
+
+    <div id="listaMatrizes">
+        <h2>Lista Completa de Matrizes</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Matriz</th>
+                    <th>Quantidade de Identificações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in matrizes_mais_identificadoras %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Gráfico de Compostos
+                const dadosCompostos = JSON.parse('{{ compostos_mais_identificados | tojson | safe }}');
+                const top10Compostos = dadosCompostos.slice(0, 10);
+                const nomesCompostos = top10Compostos.map(item => item.compound);
+                const quantidadesCompostos = top10Compostos.map(item => item.total);
+
+                // Cores para compostos
+                const coresCompostos = [
+                    'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)',
+                    'rgba(199, 199, 199, 0.7)', 'rgba(83, 102, 255, 0.7)', 'rgba(40, 159, 64, 0.7)',
+                    'rgba(210, 99, 132, 0.7)'
+                ];
+
+                new Chart(document.getElementById('graficoCompostos').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: nomesCompostos,
+                        datasets: [{
+                            label: 'Identificações',
+                            data: quantidadesCompostos,
+                            backgroundColor: coresCompostos,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'Número de Identificações' } },
+                            x: { 
+                                title: { display: true, text: 'Compostos Químicos' },
+                                ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 }
+                            }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                // Controle do botão "Veja + Compostos"
+                document.getElementById('btnLista').addEventListener('click', function() {
+                    const lista = document.getElementById('listaCompleta');
+                    lista.style.display = lista.style.display === 'none' ? 'block' : 'none';
+                    this.textContent = lista.style.display === 'none' ? 'Veja + Compostos' : 'Ocultar Lista';
+                });
+
+                // Gráfico de Matrizes
+                const dadosMatrizes = JSON.parse('{{ matrizes_mais_identificadoras | tojson | safe }}');
+                const top5Matrizes = dadosMatrizes.slice(0, 5);
+                const descricoesMatrizes = top5Matrizes.map(item => item.description);
+                const quantidadesMatrizes = top5Matrizes.map(item => item.total);
+
+                // Cores para matrizes
+                const coresMatrizes = [
+                    'rgba(54, 162, 235, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 159, 64, 0.7)', 'rgba(153, 102, 255, 0.7)'
+                ];
+
+                new Chart(document.getElementById('graficoMatrizes').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: descricoesMatrizes,
+                        datasets: [{
+                            label: 'Identificações',
+                            data: quantidadesMatrizes,
+                            backgroundColor: coresMatrizes,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'Número de Identificações' } },
+                            x: { 
+                                title: { display: true, text: 'Matrizes' },
+                                ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 }
+                            }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                // Controle do botão "Veja + Matrizes"
+                document.getElementById('btnListaMatrizes').addEventListener('click', function() {
+                    const lista = document.getElementById('listaMatrizes');
+                    lista.style.display = lista.style.display === 'none' ? 'block' : 'none';
+                    this.textContent = lista.style.display === 'none' ? 'Veja + Matrizes' : 'Ocultar Lista';
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar o dashboard:', error);
+                alert('Ocorreu um erro ao carregar os dados. Por favor, tente novamente.');
+            }
+        });
+    </script>
+</body>
+</html>

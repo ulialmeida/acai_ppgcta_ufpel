@@ -1,0 +1,19 @@
+/* Estilos globais */
+.required-field::after {
+    content: " *";
+    color: red;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+}
+
+/* Estilos específicos para formulários */
+.form-edit .card-header {
+    font-weight: 500;
+}
+
+.form-edit textarea {
+    min-height: 100px;
+}

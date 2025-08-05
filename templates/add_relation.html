@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vincular Compostos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/compounds.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/relations.css') }}">
+    <style>
+        /* Estilo para destacar opções especiais */
+        select option[value=""] {
+            color: #999;
+            font-style: italic;
+        }
+        select option[value="_NEW_"] {
+            color: #6db5d4;
+            font-weight: bold;
+        }
+        
+        /* Estilo do botão Voltar */
+        .btn-back {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 8px 15px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        
+        /* Estilo do composto selecionado */
+        .selected-compound {
+            padding: 10px;
+            background: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            margin: 8px 0;
+            font-weight: bold;
+            color: #0066cc;
+            user-select: none;
+            cursor: not-allowed;
+            position: relative;
+            display: inline-block;
+        }
+        
+        /* Tooltip */
+        .selected-compound .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .selected-compound:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    {% include 'flash_messages.html' %}
+
+    <!-- Botão Voltar condicional -->
+    {% if selected_compound %}
+    <a href="{{ url_for('view_compound', compound_id=selected_compound.compound_id) }}" class="btn-back">
+        ↩ Voltar para o Composto
+    </a>
+    {% endif %}
+
+    <div class="relation-form">
+        <h2>Vincular Composto a Matriz e Pesquisador</h2>
+        
+        <form method="POST" action="{{ url_for('add_relation') }}" onsubmit="return validateForm()">
+            <!-- Campo de Composto -->
+            <div class="form-group">
+                <label>Composto:</label>
+                {% if selected_compound %}
+                    <input type="hidden" name="compound_id" value="{{ selected_compound.compound_id }}">
+                    <div class="selected-compound">
+                        📌 {{ selected_compound.compound }} ({{ selected_compound.molecular_formula }})
+                        <span class="tooltip-text">Composto pré-selecionado</span>
+                    </div>
+                {% else %}
+                    <select name="compound_id" id="compound-select" required>
+                        <option value="">-- SELECIONE --</option>
+                        {% for compound in compounds %}
+                            <option value="{{ compound.compound_id }}">
+                                {{ compound.compound }} ({{ compound.molecular_formula }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+
+            <!-- Demais campos (mantidos iguais) -->
+            <div class="form-group">
+                <label>Organismo:</label>
+                <select id="organism-select" name="organism_select" onchange="toggleNewField('organism')" required>
+                    <option value="">-- SELECIONE --</option>
+                    <option value="_NEW_">+ Adicionar novo organismo</option>
+                    {% for org in organisms %}
+                        <option value="{{ org }}">{{ org }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" id="organism-new" name="organism_new" 
+                       class="new-field" 
+                       placeholder="Ex: Coffea arabica">
+            </div>
+
+            <div class="form-group">
+                <label>Nome Científico (em itálico):</label>
+                <input type="text" name="organism" value="{{ matrix.organism if matrix else '' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Nome Popular (opcional):</label>
+                <input type="text" name="common_name" value="{{ matrix.common_name if matrix else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Parte/Produto Derivado</label>
+                <select id="tissue-select" name="tissue_select" onchange="toggleNewField('tissue')" required>
+                    <option value="">-- SELECIONE --</option>
+                    <option value="_NEW_">+ Adicionar nova parte/produto derivado</option>
+                    {% for tissue in tissues %}
+                        <option value="{{ tissue }}">{{ tissue }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" id="tissue-new" name="tissue_new" 
+                       class="new-field" 
+                       placeholder="Ex: Folha, Caule">
+            </div>
+
+            <div class="form-group">
+                <label>Pesquisador:</label>
+                <select id="researcher-select" name="researcher_select" onchange="toggleNewField('researcher')" required>
+                    <option value="">-- SELECIONE --</option>
+                    <option value="_NEW_">+ Adicionar novo pesquisador</option>
+                    {% for researcher in researchers %}
+                        <option value="{{ researcher.name_id }}">{{ researcher.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" id="researcher-new" name="researcher_new" 
+                       class="new-field" 
+                       placeholder="Ex: Maria Silva">
+            </div>
+
+
+            <button type="submit" class="submit-btn">Vincular</button>
+        </form>
+    </div>
+
+    <script>
+    function toggleNewField(field) {
+        const select = document.getElementById(`${field}-select`);
+        const newField = document.getElementById(`${field}-new`);
+        
+        if (select.value === '_NEW_') {
+            newField.style.display = 'block';
+            newField.required = true;
+            select.required = false;
+        } else {
+            newField.style.display = 'none';
+            newField.required = false;
+            select.required = true;
+        }
+    }
+    
+    // Validação do formulário
+    function validateForm() {
+        const compoundId = document.querySelector('[name="compound_id"]')?.value || 
+                         document.getElementById('compound-select')?.value;
+        
+        if (!compoundId) {
+            alert('Por favor, selecione um composto antes de vincular!');
+            return false;
+        }
+        return true;
+    }
+    
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+        ['organism', 'tissue', 'researcher'].forEach(toggleNewField);
+    });
+    </script>
+</body>
+</html>

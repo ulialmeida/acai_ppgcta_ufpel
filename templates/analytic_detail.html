@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">
+                Detalhes da Análise #{{ analytic.analytics_id }}
+                <small class="float-end">
+                    {{ analytic.compound.compound if analytic.compound else 'Composto não identificado' }}
+                </small>
+            </h2>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Seção de Informações Básicas -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h4>Informações do Composto</h4>
+                    <dl class="row">
+                        <dt class="col-sm-4">ID da Análise:</dt>
+                        <dd class="col-sm-8">{{ analytic.analytics_id }}</dd>
+
+                        <dt class="col-sm-4">ID do Composto:</dt>
+                        <dd class="col-sm-8">{{ analytic.compound_id }}</dd>
+
+                        <dt class="col-sm-4">Nome:</dt>
+                        <dd class="col-sm-8">{{ analytic.compound.compound if analytic.compound else '-' }}</dd>
+
+                        <dt class="col-sm-4">Classe:</dt>
+                        <dd class="col-sm-8">{{ analytic.compound_class or '-' }}</dd>
+                    </dl>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Dados Analíticos</h4>
+                    <dl class="row">
+                        <dt class="col-sm-4">Tempo de Retenção:</dt>
+                        <dd class="col-sm-8">{{ "%.2f s"|format(analytic.retention_time) if analytic.retention_time is not none else '-' }}</dd>
+
+                        <dt class="col-sm-4">m/z:</dt>
+                        <dd class="col-sm-8">{{ "%.4f"|format(analytic.m_z) if analytic.m_z is not none else '-' }}</dd>
+
+                        <dt class="col-sm-4">Intensidade Total:</dt>
+                        <dd class="col-sm-8">{{ "{:,.0f}".format(analytic.intensity) if analytic.intensity is not none else '-' }}</dd>
+
+                        <dt class="col-sm-4">Sigma:</dt>
+                        <dd class="col-sm-8">{{ "%.2f"|format(analytic.sigma) if analytic.sigma is not none else '-' }}</dd>
+
+                        <dt class="col-sm-4">Energia de Colisão:</dt>
+                        <dd class="col-sm-8">{{ "%.1f eV"|format(analytic.collision_energy) if analytic.collision_energy is not none else '-' }}</dd>
+
+                        <dt class="col-sm-4">Modo de Ionização:</dt>
+                        <dd class="col-sm-8">{{ analytic.ionization_mode or '-' }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Seção de Configuração Instrumental -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h4>Instrumentação</h4>
+                    <dl class="row">
+                        <dt class="col-sm-4">Método:</dt>
+                        <dd class="col-sm-8">{{ analytic.instrument_method }}</dd>
+
+                        <dt class="col-sm-4">Descrição do Método:</dt>
+                        <dd class="col-sm-8">{{ analytic.method_description or '-' }}</dd>
+
+                        <dt class="col-sm-4">Condições Cromatográficas:</dt>
+                        <dd class="col-sm-8">{{ analytic.chromatographic_condition or '-' }}</dd>
+                    </dl>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Matriz</h4>
+                    <dl class="row">
+                        <dt class="col-sm-4">Matriz ID:</dt>
+                        <dd class="col-sm-8">{{ analytic.matrix_id }}</dd>
+
+                        <dt class="col-sm-4">Organismo:</dt>
+                        <dd class="col-sm-8">
+                            {% if analytic.matrix %}
+                                {{ analytic.matrix.organism }} ({{ analytic.matrix.plant_tissue }})
+                            {% else %}
+                                -
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Seção de Fragmentos -->
+            {% if analytic.fragments and analytic.fragments|length > 0 %}
+            <div class="mb-4">
+                <h4>Fragmentos Detalhados</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>m/z</th>
+                            <th>Intensidade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fragment in analytic.fragments %}
+                        <tr>
+                            <td>{{ "%.4f"|format(fragment.m_z) if fragment.m_z is not none else '-' }}</td>
+                            <td>{{ "{:,.0f}".format(fragment.intensity) if fragment.intensity is not none else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- Seção de Notas -->
+            {% if analytic.notes %}
+            <div class="mb-3">
+                <h4>Notas</h4>
+                <div class="card">
+                    <div class="card-body">
+                        {{ analytic.notes }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ url_for('analytics_view') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar para a lista
+                </a>
+                <div>
+                    <a href="{{ url_for('edit_analytic', id=analytic.analytics_id) }}" 
+                       class="btn btn-primary me-2">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a href="{{ url_for('delete_analytic', id=analytic.analytics_id) }}" 
+                       class="btn btn-danger"
+                       onclick="return confirm('Tem certeza que deseja excluir esta análise permanentemente?')">
+                        <i class="bi bi-trash"></i> Excluir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

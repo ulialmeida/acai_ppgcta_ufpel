@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Entrada</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body class="loading">
+    <!-- Adicionar animação GIF 
+    <div id="loading-container">
+        <img class="loading" src="{{ url_for('static', filename='loading.gif') }}" alt="Carregando...">
+    </div>-->
+
+    <!-- Adicionar imagem -->
+    <img class="imgsquare" src="{{ url_for('static', filename='image/logodb3.png') }}" alt="Logo do Banco de Dados">
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Remove a classe "loading" após um curto intervalo de tempo (simulando carregamento)
+            setTimeout(function () {
+                document.body.classList.remove("loading");
+                
+                // Mostre a página de entrada
+                document.getElementById("loading-container").style.display = "none";
+            }, 5000); // Tempo em milissegundos (5 seg)
+        });
+    </script>
+
+    <!-- Adicione o botão de login no canto superior direito -->
+    <div class="login-btn">
+        <form action="{{ login_url }}" method="get">
+            <input type="submit" value="Login">
+        </form>
+    </div>
+
+    <div class="container">
+        <h1>AÇAI - Análises Cromatográficas de Alimentos e Identificação</h1>
+        <div class="btn-container">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Compostos</a>
+            <a href="{{ url_for('matrixes') }}" class="btn btn-primary">Matrizes</a>
+            <a href="{{ url_for('name') }}" class="btn btn-primary">Autores</a>
+            <a href="{{ url_for('identification') }}" class="btn btn-primary">Identificação</a>
+            <a href="{{ url_for('analytics_view') }}" class="btn btn-secondary">Dados Analíticos</a>
+            <a href="{{ url_for('buscar_compostos') }}" class="btn btn-primary">🔍 Buscar Compostos</a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-dashboard">📊 Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Rodapé com logo e texto -->
+    <footer style="
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding: 10px;
+    font-size: 12px;
+    color: #555;
+    background-color: #f5f5f5;  /* opcional: fundo cinza claro */
+    border-top: 1px solid #ddd;  /* opcional: linha de separação */
+">
+    <!-- Logo UFPel (esquerda) -->
+    <img 
+        src="{{ url_for('static', filename='image/logo_ufpel.png') }}" 
+        alt="Logo UFPel" 
+        style="height: 40px;"
+    >
+
+    <!-- Texto centralizado -->
+    <div style="text-align: center;">
+        <div><strong>Universidade Federal de Pelotas</strong></div>
+        <div>Programa de Pós-Graduação em Ciência e Tecnologia de Alimentos</div>
+    </div>
+
+    <!-- Logo PPCGTA (direita) -->
+    <img 
+        src="{{ url_for('static', filename='image/logo_ppgcta.png') }}" 
+        alt="Logo PPCGTA" 
+        style="height: 60px;"
+    >
+</footer>
+</body>
+</html>

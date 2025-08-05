@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="compound-detail">
+    <h2>{{ compound.compound }}</h2>
+    
+    <div class="basic-info">
+        <p><strong>Fórmula Molecular:</strong> {{ compound.molecular_formula }}</p>
+        <p><strong>Massa Molecular:</strong> {{ "%.2f"|format(compound.molecular_mass) }}</p>
+        {% if compound.pubchem_cid %}
+    <p><strong>PubChem CID:</strong> 
+        <a href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ compound.pubchem_cid }}" 
+           target="_blank" 
+           rel="noopener noreferrer">
+           {{ compound.pubchem_cid }}
+        </a>
+    </p>
+{% endif %}
+
+    </div>
+    
+    <h3>Identificações Relacionadas</h3>
+    <div class="identifications-container">
+        {% for identification, matrix, researcher in identifications %}
+        <div class="identification-item">
+            <div class="identification-details">
+                <p>
+                    <strong>Matriz:</strong> 
+                    <span class="scientific-name"><i>{{ matrix.organism }}</i></span>
+                    {% if matrix.common_name %}
+                    <span class="common-name">({{ matrix.common_name }})</span>
+                    {% endif %}
+                    - {{ matrix.plant_tissue }}
+                </p>
+                <p>
+                    <strong>Pesquisador:</strong> {{ researcher.name }}
+                </p>
+            </div>
+            {% if current_user.is_authenticated %}
+            <div class="identification-actions">
+                <a href="{{ url_for('edit_identification', 
+                          compound_id=compound.compound_id,
+                          matrix_id=matrix.matrixes_id,
+                          name_id=researcher.name_id) }}"
+                   class="btn-edit-small">
+                   <i class="fas fa-edit"></i> Editar
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="no-identifications">
+            <p>Nenhuma identificação registrada para este composto.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="actions">
+        <a href="{{ url_for('index') }}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('show_relation_form', compound_id=compound.compound_id) }}" 
+           class="btn-add-relation">
+           <i class="fas fa-plus"></i> Adicionar Identificação
+        </a>
+        <a href="{{ url_for('edit_compound', compound_id=compound.compound_id) }}"
+           class="btn-edit">
+           <i class="fas fa-edit"></i> Editar Composto
+        </a>
+        {% endif %}
+    </div>
+</div> 
+
+<style>
+    /* Estilos gerais */
+    .compound-detail {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    h2 {
+        color: #2c3e50;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    h3 {
+        color: #3498db;
+        margin-top: 25px;
+        margin-bottom: 15px;
+    }
+    
+    .basic-info {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    
+    /* Seção de dados químicos */
+    .chemical-data-section {
+        margin: 25px 0;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #17a2b8;
+    }
+    
+    .loading-spinner {
+        color: #6c757d;
+        text-align: center;
+        padding: 10px;
+    }
+    
+    .fa-spinner {
+        margin-right: 8px;
+    }
+    
+    .chemical-data-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    .data-item {
+        background-color: white;
+        padding: 12px;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .data-label {
+        display: block;
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+    }
+    
+    .data-value {
+        word-break: break-word;
+        font-size: 0.95em;
+    }
+    
+    code {
+        font-family: 'Courier New', monospace;
+        background-color: #f0f0f0;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
+    
+    .data-links {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .external-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #17a2b8;
+        text-decoration: none;
+        padding: 5px 10px;
+        border: 1px solid #17a2b8;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+    
+    .external-link:hover {
+        background-color: #17a2b8;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        padding: 10px;
+        background-color: #f8d7da;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .manual-search {
+        color: #6c757d;
+    }
+    
+    .manual-search p {
+        margin-bottom: 10px;
+    }
+    
+    .search-links {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-search {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        background-color: #6c757d;
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-search:hover {
+        background-color: #5a6268;
+        color: white;
+    }
+    
+    /* Identificações */
+    .identifications-container {
+        margin-top: 20px;
+    }
+    
+    .identification-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #49534ac0;
+        transition: transform 0.2s;
+    }
+    
+    .identification-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .identification-details {
+        flex: 1;
+    }
+    
+    .scientific-name {
+        font-style: italic;
+        color: #2c3e50;
+    }
+    
+    .common-name {
+        color: #7f8c8d;
+        font-size: 0.9em;
+    }
+    
+    .no-identifications {
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        text-align: center;
+        color: #6c757d;
+    }
+
+    /* Estilos para os estados de carregamento e erro */
+.loading-state, .error-state {
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.loading-state {
+    color: #17a2b8;
+    background-color: #e3f2fd;
+}
+
+.error-state {
+    color: #dc3545;
+    background-color: #f8d7da;
+}
+
+.retry-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 15px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.retry-btn:hover {
+    background-color: #c82333;
+}
+
+.manual-fallback {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.data-source {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #6c757d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+    
+    /* Botões */
+    .btn-edit-small {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background-color: #4CAF50;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9em;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-edit-small:hover {
+        background-color: #3e8e41;
+        color: white;
+    }
+    
+    .actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-back, .btn-add-relation, .btn-edit {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    
+    .btn-back {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .btn-back:hover {
+        background-color: #5a6268;
+        color: white;
+    }
+    
+    .btn-add-relation {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .btn-add-relation:hover {
+        background-color: #0069d9;
+        color: white;
+    }
+    
+    .btn-edit {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .btn-edit:hover {
+        background-color: #e0a800;
+        color: #212529;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .chemical-data-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .actions {
+            flex-direction: column;
+        }
+        
+        .btn-back, .btn-add-relation, .btn-edit {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}

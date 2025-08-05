@@ -1,0 +1,19 @@
+/* loading.css */
+
+#loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgb(255, 255, 255); /*fundo branco - da para deixar semi transparente tambem*/
+    z-index: 9999; /* z-index alto para garantir que fique sobre outros elementos */
+}
+
+#loading-container img {
+    width: 100px; /* ou ajuste conforme necessário */
+    height: 100px; 
+}

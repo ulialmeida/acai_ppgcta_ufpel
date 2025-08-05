@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Busca de Compostos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/compounds.css') }}">
+    <style>
+        /* Estilos específicos para busca */
+        .search-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .search-box {
+            display: flex;
+            margin-bottom: 30px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #49534ac0;
+            border-radius: 5px 0 0 5px;
+            font-size: 16px;
+        }
+        
+        .search-box button {
+            background: #49534ac0;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .results-count {
+            color: #49534a;
+            margin-bottom: 20px;
+        }
+        
+        /* Estilo para os links dos compostos */
+        .compound-link {
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .compound-link:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
+        
+        /* Estilo para o highlight que funciona dentro dos links */
+        .compound-link .highlight {
+            background-color: #fff9c4;
+            color: inherit;
+            padding: 2px 0;
+            border-radius: 3px;
+        }
+        
+        /* Estilos das mensagens flash */
+        .flash-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 5px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            animation: fadeIn 0.3s;
+        }
+        
+        .flash-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        
+        .flash-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; top: 10px; }
+            to { opacity: 1; top: 20px; }
+        }
+        
+        /* Estilos da tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mensagens Flash -->
+    <div id="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="search-container">
+        <!-- Barra de Busca -->
+        <form action="{{ url_for('search') }}" method="GET" class="search-box">
+            <input 
+                type="text" 
+                name="q" 
+                value="{{ search_term }}" 
+                placeholder="Digite nome do composto ou fórmula molecular..." 
+                required
+            >
+            <button type="submit">
+                🔍 Buscar
+            </button>
+        </form>
+        
+        <!-- Resultados -->
+        {% if search_term %}
+            <div class="results-count">
+                {% if results %}
+                    <h2>{{ results|length }} resultados encontrados para "{{ search_term }}"</h2>
+                {% else %}
+                    <h2>Nenhum resultado encontrado para "{{ search_term }}"</h2>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        {% if results %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Composto</th>
+                        <th>Fórmula Molecular</th>
+                        <th>Massa Molecular</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for compound in results %}
+                    <tr>
+                        <td>{{ compound.compound_id }}</td>
+                        <td>
+                            <a href="{{ url_for('view_compound', compound_id=compound.compound_id) }}" 
+                               class="compound-link"
+                               id="compound-{{ compound.compound_id }}">
+                               {{ compound.compound }}
+                            </a>
+                        </td>
+                        <td>{{ compound.molecular_formula }}</td>
+                        <td>{{ "%.2f"|format(compound.molecular_mass) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    <!-- JavaScript para destacar resultados -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchTerm = "{{ search_term }}".toLowerCase();
+        if (searchTerm && searchTerm.length > 0) {
+            // Destaca correspondências nos links dos compostos
+            document.querySelectorAll('.compound-link').forEach(link => {
+                const originalText = link.textContent;
+                const highlighted = originalText.replace(
+                    new RegExp(searchTerm, 'gi'),
+                    match => `<span class="highlight">${match}</span>`
+                );
+                
+                if (highlighted !== originalText) {
+                    link.innerHTML = highlighted;
+                }
+            });
+            
+            // Remove as mensagens flash após 3 segundos
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(msg => {
+                setTimeout(() => {
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500);
+                }, 3000);
+            });
+        }
+    });
+    </script>
+</body>
+</html>

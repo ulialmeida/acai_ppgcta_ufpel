@@ -1,0 +1,27 @@
+<h2>Análises para o composto: {{ composto.compound }}</h2>
+<p><strong>Fórmula:</strong> {{ composto.molecular_formula }}</p>
+<p><strong>Massa Molecular:</strong> {{ composto.molecular_mass }}</p>
+<p><strong>PubChem:</strong> <a href="{{ composto.pubchem_url }}" target="_blank">{{ composto.pubchem_cid }}</a></p>
+<strong>ID do Composto:</strong> 
+<a href="{{ url_for('view_compound', compound_id=composto.compound_id) }}">{{ composto.compound_id }}</a>
+
+
+{% if analises %}
+  <h3>Lista de Análises</h3>
+  <ul>
+    {% for a in analises %}
+      <li>
+        <strong>ID da Análise:</strong> <a href="{{ url_for('ver_analise_individual', analytics_id=a.analytics_id) }}">{{ a.analytics_id }}</a>
+        <ul>
+          {% for f in a.fragments %}
+            <li>m/z: {{ "%.4f"|format(f.m_z) }} | Intensidade: {{ "%.2f"|format(f.intensity or 0) }}</li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Nenhuma análise encontrada para este composto.</p>
+{% endif %}
+
+<p><a href="{{ url_for('index') }}">← Voltar</a></p>

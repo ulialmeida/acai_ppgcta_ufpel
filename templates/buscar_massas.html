@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscar Compostos por Massa</title>
+</head>
+<body>
+    <h1>Buscar Compostos por Massa Molecular</h1>
+    <form method="POST">
+        <label for="massa">Massa molecular:</label>
+        <input type="number" step="any" name="massa" required>
+        <button type="submit">Buscar</button>
+    </form>
+
+    {% if resultados %}
+        <h2>Resultados:</h2>
+        <table border="1">
+            <tr>
+                <th>Nome</th>
+                <th>Massa Molecular</th>
+                <th>Diferença</th>
+            </tr>
+            {% for r in resultados %}
+            <tr>
+                <td>{{ r['compound_name'] }}</td>
+                <td>{{ r['molecular_mass'] }}</td>
+                <td>{{ r['diferenca'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% elif resultados is not none %}
+        <p>Nenhum composto encontrado.</p>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authors</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/names.css') }}">
+    <style>
+        /* Estilos para os botões - pode adicionar ao names.css se preferir */
+        .btn-edit {
+            background: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-right: 5px;
+        }
+        .btn-delete {
+            background: #f44336;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+        }
+        .actions {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Authors</h1>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+        {% endif %}
+    </div>
+
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    {% if current_user.is_authenticated %}
+                        <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for name in names %}
+                <tr>
+                    <td>{{ name.name_id }}</td>
+                    <td><a href="{{ url_for('view_author_compounds', author_id=name.name_id) }}">{{ name.name }}</a></td>
+                    {% if current_user.is_authenticated %}
+                    <td class="actions">
+                        <!-- Botão de Edição -->
+                        <a href="{{ url_for('edit_name', name_id=name.name_id) }}" class="btn-edit">Editar</a>
+                        
+                        <!-- Formulário de Exclusão -->
+                        <form method="POST" action="{{ url_for('delete_name') }}" style="display: inline;">
+                            <input type="hidden" name="name_id" value="{{ name.name_id }}">
+                            <button type="submit" class="btn-delete" onclick="return confirm('Tem certeza?')">Excluir</button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+        
+    {% if current_user.is_authenticated %}
+    <div class="add-form">
+        <h2>Add Name</h2>
+        <form method="POST" action="{{ url_for('add_name') }}">
+            <label for="name">Name:</label>
+            <input type="text" name="name" required><br>
+            <input type="submit" value="Add Name">
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="navigation">
+        <a href="{{ url_for('entrada') }}">Home |</a>
+        <a href="{{ url_for('index') }}">Compounds |</a>
+        <a href="{{ url_for('matrixes') }}">Matrixes</a>
+    </div>
+
+</body>
+</html>

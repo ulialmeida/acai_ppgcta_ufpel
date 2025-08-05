@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Matrix Compounds</title>
+</head>
+<body>
+    <h1>Matrix Compounds</h1>
+    <h2>Organismo: {{ matrix.organism }}</h2>
+    <h3>Compostos Encontrados:</h3>
+    <ul>
+        {% for compound in compound_info %}
+            <li><a href="/view_compound/{{ compound.compound_id }}">{{ compound.compound }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+

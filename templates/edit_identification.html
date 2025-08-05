@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="edit-id-container">
+    <h2>Editar Identificação</h2>
+    <p class="id-info">
+        <strong>Composto:</strong> {{ compound.compound }}<br>
+        <strong>Pesquisador:</strong> {{ researcher.name }}
+    </p>
+    
+    <form method="POST">
+        <!-- Organismo -->
+        <div class="form-group">
+            <label>Organismo:</label>
+            <select id="organism-select" name="organism_select" onchange="toggleNewField('organism')" required>
+                <option value="">-- SELECIONE --</option>
+                <option value="_NEW_">+ Adicionar novo organismo</option>
+                {% for org in organisms %}
+                    <option value="{{ org }}" {% if org == old_matrix.organism %}selected{% endif %}>{{ org }}</option>
+                {% endfor %}
+            </select>
+            
+            <input type="text" id="organism-new" name="organism_new" 
+                   class="new-field" placeholder="Ex: Coffea arabica"
+                   style="display: none;">
+        </div>
+        
+        <!-- Tecido Vegetal -->
+        <div class="form-group">
+            <label>Parte/Produto:</label>
+            <select id="tissue-select" name="tissue_select" onchange="toggleNewField('tissue')" required>
+                <option value="">-- SELECIONE --</option>
+                <option value="_NEW_">+ Adicionar novo tecido</option>
+                {% for tissue in tissues %}
+                    <option value="{{ tissue }}" {% if tissue == old_matrix.plant_tissue %}selected{% endif %}>{{ tissue }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" id="tissue-new" name="tissue_new" 
+                   class="new-field" placeholder="Ex: Folha, Caule"
+                   style="display: none;">
+        </div>
+        
+        <button type="submit" class="btn-save">Salvar Alterações</button>
+        <a href="{{ url_for('view_compound', compound_id=compound.compound_id) }}" class="btn-cancel">Cancelar</a>
+    </form>
+</div>
+
+<script>
+// Ativa os campos novos se "_NEW_" estiver selecionado
+function toggleNewField(field) {
+    const select = document.getElementById(`${field}-select`);
+    const newField = document.getElementById(`${field}-new`);
+    
+    if (select.value === '_NEW_') {
+        newField.style.display = 'block';
+        newField.required = true;
+        select.required = false;
+    } else {
+        newField.style.display = 'none';
+        newField.required = false;
+        select.required = true;
+    }
+}
+
+// Inicializa os campos
+document.addEventListener('DOMContentLoaded', function() {
+    ['organism', 'tissue'].forEach(toggleNewField);
+});
+</script>
+{% endblock %}

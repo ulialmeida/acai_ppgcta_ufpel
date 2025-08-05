@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="edit-container">
+    <h2>Editar Pesquisador</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>Nome:</label>
+            <input type="text" name="name" value="{{ name.name }}" required>
+        </div>
+        <button type="submit">Salvar</button>
+        <a href="{{ url_for('name') }}">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

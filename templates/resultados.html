@@ -1,0 +1,21 @@
+<h2>Resultados da Análise</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Fórmula Molecular</th>
+            <th>Fragment m/z</th>
+            <th>Intensidade</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in compostos %}
+        <tr>
+            <td>{{ c.nome_composto }}</td>
+            <td>{{ c.formula_molecular }}</td>
+            <td>{{ c.fragment_mz }}</td>
+            <td>{{ c.intensidade }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

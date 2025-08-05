@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Importar Compostos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/compounds.css') }}">
+    <style>
+        /* Estilos específicos para esta página */
+        .upload-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        
+        .upload-form {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .instructions {
+            background: #eef7ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+
+        /* Classes para mensagens flash */
+        .alert-error {
+            display: inline-block;
+            padding: 12px 25px;
+            margin: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            background: #FFEBEE;
+            color: #C62828;
+            border: 1px solid #EF9A9A;
+        }
+        
+        .alert-success {
+            display: inline-block;
+            padding: 12px 25px;
+            margin: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            background: #E8F5E9;
+            color: #2E7D32;
+            border: 1px solid #A5D6A7;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mensagens Flash corrigidas -->
+    <div id="flash-messages" style="position: fixed; top: 20px; left: 0; right: 0; text-align: center; z-index: 1000;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="upload-container">
+        <h1 style="text-align: center; color: #2c3e50;">Importar Compostos</h1>
+        
+        <div class="upload-form">
+            <form method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".xlsx,.xls,.csv" required
+                       style="margin: 0 auto; display: block; padding: 10px;">
+                <br>
+                <button type="submit" 
+                        style="background: #4CAF50; color: white; padding: 12px 25px; 
+                               border: none; border-radius: 5px; cursor: pointer;
+                               font-size: 16px; transition: background 0.3s;">
+                    Importar Dados
+                </button>
+            </form>
+        </div>
+        
+        <div class="instructions">
+            <h3 style="margin-top: 0;">📋 Instruções de Importação:</h3>
+            <ul style="padding-left: 20px;">
+                <li><strong>Formato requerido:</strong> .xlsx, .xls ou .csv</li>
+                <li><strong>Colunas obrigatórias:</strong>
+                    <ul>
+                        <li><code>compound</code> (nome do composto)</li>
+                        <li><code>molecular_formula</code></li>
+                        <li><code>molecular_mass</code> (valor numérico)</li>
+                    </ul>
+                </li>
+                <li>O sistema <strong>ignorará automaticamente</strong> compostos duplicados</li>
+                <li>O <strong>compound_id</strong> será gerado automaticamente</li>
+            </ul>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="{{ url_for('index') }}" 
+                   style="color: #3498db; text-decoration: none; font-weight: bold;">
+                    ← Voltar para a lista de compostos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript para melhorar a experiência -->
+    <script>
+        // No final do seu upload.html
+document.querySelector('form').addEventListener('submit', function(e) {
+    const file = document.querySelector('input[type="file"]').files[0];
+    if (file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['csv', 'xlsx', 'xls'].includes(ext)) {
+            e.preventDefault();
+            alert('Por favor, selecione um arquivo .csv, .xlsx ou .xls');
+        }
+    }
+});
+    // Efeito ao passar o mouse no botão
+    document.querySelector('button').addEventListener('mouseover', function() {
+        this.style.background = '#45a049';
+    });
+    document.querySelector('button').addEventListener('mouseout', function() {
+        this.style.background = '#4CAF50';
+    });
+    
+    // Mostra nome do arquivo selecionado
+    const fileInput = document.querySelector('input[type="file"]');
+    const fileLabel = document.createElement('div');
+    fileLabel.style.margin = '10px 0';
+    fileLabel.style.color = '#666';
+    fileInput.parentNode.insertBefore(fileLabel, fileInput.nextSibling);
+    
+    fileInput.addEventListener('change', function(e) {
+        if (this.files.length > 0) {
+            fileLabel.textContent = 'Arquivo selecionado: ' + this.files[0].name;
+        } else {
+            fileLabel.textContent = '';
+        }
+    });
+    $.ajax({
+    url: '/upload',
+    type: 'POST',
+    data: formData,
+    contentType: false,
+    processData: false,
+    success: function(data) {
+        alert(`Sucesso! ${data.success}`);
+    },
+    error: function(xhr) {
+        const error = xhr.responseJSON;
+        let msg = `Erro: ${error.error}`;
+        
+        if (error.detalhes) msg += `\nDetalhes: ${error.detalhes}`;
+        if (error.solucao) msg += `\nSolução: ${error.solucao}`;
+        
+        alert(msg);
+    }
+});
+    </script>
+</body>
+</html>

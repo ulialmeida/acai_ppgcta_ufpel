@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Author's Identified Compounds</title>
+</head>
+<body>
+    <h1>Author's Identified Compounds</h1>
+    <h2>Author: {{ author.name }}</h2>
+    
+    <ul>
+        {% for compound in compounds_info %}
+        <li><a href="/view_compound/{{ compound.compound_id }}">{{ compound.compound }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <a href="/name">Back to Authors</a>
+</body>
+</html>
+
+
+

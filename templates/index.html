@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="search-box">
+        <form action="{{ url_for('search') }}" method="GET">
+            <input type="text" name="q" placeholder="Buscar compostos...">
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Compound</th>
+                <th>Molecular Formula</th>
+                <th>Molecular Mass</th>
+                <th>PubChem CID</th>
+                <th>PubChem URL</th>
+                {% if current_user.is_authenticated %}
+                    <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% if compounds %}
+                {% for compound in compounds %}
+                    <tr>
+                        <td>{{ compound.compound_id }}</td>
+                        <td>
+                            <a href="{{ url_for('view_compound', compound_id=compound.compound_id) }}">
+                                {{ compound.compound }}
+                            </a>
+                        </td>
+                        <td>{{ compound.molecular_formula }}</td>
+                        <td>{{ compound.molecular_mass }}</td>
+                        <td>{{ compound.pubchem_cid }}</td>
+                        <td>
+                            {% if compound.pubchem_url %}
+                                <a href="{{ compound.pubchem_url }}" target="_blank">Link</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+        
+                        {% if current_user.is_authenticated %}
+                        <td class="actions">
+                            <a href="{{ url_for('edit_compound', compound_id=compound.compound_id) }}" class="btn-edit">Editar</a>
+                            <form method="POST" action="{{ url_for('delete_compound') }}" style="display: inline;">
+                                <input type="hidden" name="compound_id" value="{{ compound.compound_id }}">
+                                <button type="submit" class="btn-delete" onclick="return confirm('Tem certeza?')">Excluir</button>
+                            </form>
+                            <!-- Adicione este botão do PubChem -->
+                            <a href="{{ url_for('fetch_pubchem', compound_id=compound.compound_id) }}" 
+                               class="btn-pubchem" 
+                               title="Buscar/Atualizar dados no PubChem">
+                                PubChem
+                            </a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+    
+    {% if current_user.is_authenticated %}
+        <div class="add-compound">
+            <h2>Add Compound</h2>
+            <form method="POST" action="{{ url_for('add_compound') }}">
+                <div class="form-group">
+                    <label for="compound">Compound:</label>
+                    <input type="text" name="compound" required>
+                </div>
+                <div class="form-group">
+                    <label for="molecular_formula">Molecular Formula:</label>
+                    <input type="text" name="molecular_formula" required>
+                </div>
+                <div class="form-group">
+                    <label for="molecular_mass">Molecular Mass:</label>
+                    <input type="number" step="any" name="molecular_mass" required>
+                </div>
+                <button type="submit">Add Compound</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <style>
+        /* Estilos para os botões de ação */
+        .actions a, .actions button {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-right: 5px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        
+        .btn-edit {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-pubchem {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .btn-edit:hover, .btn-pubchem:hover {
+            opacity: 0.8;
+        }
+        
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+    </style>
+{% endblock %}

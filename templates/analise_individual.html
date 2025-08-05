@@ -1,0 +1,20 @@
+<h2>Detalhes da Análise ID {{ analise.analytics_id }}</h2>
+
+{% if composto %}
+<p><strong>Composto:</strong> {{ composto.compound }}</p>
+<p><strong>Fórmula:</strong> {{ composto.molecular_formula }}</p>
+<p><strong>Massa Molecular:</strong> {{ composto.molecular_mass }}</p>
+{% endif %}
+
+<h3>Fragmentos:</h3>
+{% if analise.fragments %}
+  <ul>
+    {% for frag in analise.fragments %}
+      <li>m/z: {{ "%.4f"|format(frag.m_z) }} | Intensidade: {{ "%.2f"|format(frag.intensity or 0) }}</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Nenhum fragmento encontrado.</p>
+{% endif %}
+
+<p><a href="{{ url_for('ver_analises', compound_id=analise.compound_id) }}">← Voltar para o composto</a></p>

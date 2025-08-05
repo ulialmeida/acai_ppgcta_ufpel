@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análises de Compostos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .table-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .notes-cell {
+            max-width: 300px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .details-row {
+            background-color: #f8f9fa;
+        }
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+
+    .table-container {
+        max-height: 65vh;
+        overflow-y: auto;
+    }
+    .details-row td {
+        background-color: #f8f9fa;
+        border-top: 0;
+        padding-top: 0;
+    }
+    .btn-group form {
+    display: inline-block;
+    margin: 0;
+    }
+    .btn-group button {
+        border-radius: 0.25rem !important;
+        margin-left: -1px;
+    }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <h1 class="text-center mb-4">Análises de Compostos</h1>
+        
+        <!-- Seção de Importação -->
+        <div class="form-section mb-4">
+            <h3 class="mb-3">Importar Análises</h3>
+            <form method="POST" action="{{ url_for('import_analytics') }}" enctype="multipart/form-data" class="mb-3">
+                <div class="mb-3">
+                    <input type="file" name="file" class="form-control" accept=".csv,.xlsx,.xls" required>
+                </div>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-upload"></i> Importar Dados
+                </button>
+                <a href="{{ url_for('download_analytics_template') }}" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-download"></i> Baixar Template
+                </a>
+            </form>
+            <small class="text-muted">O arquivo deve conter: compound_id, matrix_id, retention_time, experimental m_z, intensity, sigma, instrument_method, fragment, method_description, chromatographic_condition, notes, compound_class, ionization_mode, collision_energy</small>
+        </div>
+        
+        <!-- Formulário de Adição Manual -->
+        <div class="form-section mb-4">
+            <h3 class="mb-3">Adicionar Análise Manualmente</h3>
+            <form method="POST" action="{{ url_for('add_analytic') }}">
+                <!-- Seção 1: Identificação Básica -->
+                <div class="card mb-4 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Informações Básicas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required-field">Composto</label>
+                                <select name="compound_id" class="form-select" required>
+                                    <option value="">Selecione um composto</option>
+                                    {% for compound in compounds %}
+                                        <option value="{{ compound.compound_id }}">{{ compound.compound }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required-field">Matriz</label>
+                                <select name="matrix_id" class="form-select" required>
+                                    <option value="">Selecione uma matriz</option>
+                                    {% for matrix in matrixes %}
+                                        <option value="{{ matrix.matrixes_id }}">{{ matrix.organism }} ({{ matrix.plant_tissue }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required-field">Método Instrumental</label>
+                                <select name="instrument_method" class="form-select" required>
+                                    <option value="">Selecione o método...</option>
+                                    <optgroup label="Cromatografia Líquida">
+                                        <option value="HPLC-DAD">HPLC-DAD</option>
+                                        <option value="HPLC-UV">HPLC-UV</option>
+                                        <option value="UHPLC-MS">UHPLC-MS</option>
+                                        <option value="HPLC-MS/MS">HPLC-MS/MS</option>
+                                        <option value="HPLC-ELSD">HPLC-ELSD</option>
+                                    </optgroup>
+                                    <optgroup label="Cromatografia Gasosa">
+                                        <option value="GC-MS">GC-MS</option>
+                                        <option value="GC-FID">GC-FID</option>
+                                        <option value="GC-ECD">GC-ECD</option>
+                                    </optgroup>
+                                    <optgroup label="Espectrometria de Massa">
+                                        <option value="MALDI-TOF">MALDI-TOF</option>
+                                        <option value="ESI-MS">ESI-MS</option>
+                                        <option value="Q-TOF">Q-TOF</option>
+                                        <option value="Orbitrap">Orbitrap</option>
+                                    </optgroup>
+                                    <optgroup label="Outros">
+                                        <option value="CE-MS">CE-MS</option>
+                                        <option value="TLC">TLC</option>
+                                        <option value="OTHER">Outro (especificar)</option>
+                                    </optgroup>                   
+                                 </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Classe do Composto</label>
+                            <select name="compound_class" class="form-select">
+                                <option value="amino_acid">-</option>
+                                <optgroup label="Primários">
+                                    <option value="amino_acid">Aminoácido</option>
+                                    <option value="carbohydrate">Carboidrato</option>
+                                    <option value="organic_acid">Ácido orgânico</option>
+                                    <option value="lipid">Lipídeo</option>
+                                </optgroup>
+                                <optgroup label="Secundários">
+                                    <option value="alkaloid">Alcaloide</option>
+                                    <option value="alkaloid">Antocianina</option>
+                                    <option value="flavonoid">Flavonoide</option>
+                                    <option value="terpenoid">Terpenoide</option>
+                                    <option value="phenolic">Fenólico</option>
+                                    <option value="glycoside">Glicosídeo</option>
+                                    <option value="saponin">Saponina</option>
+                                    <option value="lignan">Lignana</option>
+                                    <option value="coumarin">Cumarina</option>
+                                </optgroup>
+                                <optgroup label="Outros">
+                                    <option value="peptide">Peptídeo</option>
+                                    <option value="steroid">Esteróide</option>
+                                    <option value="nucleotide">Nucleotídeo</option>
+                                    <option value="xenobiotic">Xenobiótico</option>
+                                </optgroup>
+                             </select>
+                        </div>
+                     </div>
+
+ <!-- Seção 2: Dados Analíticos -->
+<div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Dados Analíticos</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Tempo de Retenção (min)</label>
+                <input type="number" step="0.01" name="retention_time" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Experimental (m/z)</label>
+                <input type="number" step="0.0001" name="m_z" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Intensidade total</label>
+                <input type="number" name="intensity" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Sigma</label>
+                <input type="number" step="0.01" name="sigma" class="form-control">
+            </div>
+        </div>
+
+        <!-- Fragmentos adicionais -->
+        <div id="fragment-container">
+            <div class="row fragment-row mb-2">
+                <div class="col-md-5">
+                    <label class="form-label">Fragmento (m/z)</label>
+                    <input type="number" step="0.0001" name="fragments[][m_z]" class="form-control" required>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Intensidade</label>
+                    <input type="number" name="fragments[][intensity]" class="form-control" required>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger btn-sm remove-fragment w-100">
+                        Remover
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <button type="button" class="btn btn-outline-primary" id="add-fragment">
+                + Adicionar Fragmento
+            </button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Modo de Ionização</label>
+                <select name="ionization_mode" class="form-select">
+                    <option value="">Não aplicável</option>
+                    <option value="positive">Positivo (+)</option>
+                    <option value="negative">Negativo (-)</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Energia de Colisão (eV)</label>
+                <input type="number" step="0.1" name="collision_energy" class="form-control">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const fragmentContainer = document.getElementById('fragment-container');
+        const addButton = document.getElementById('add-fragment');
+
+        addButton.addEventListener('click', function () {
+            const newRow = document.createElement('div');
+            newRow.className = 'row fragment-row mb-2';
+
+            newRow.innerHTML = `
+                <div class="col-md-5">
+                    <input type="number" step="0.0001" name="fragments[][m_z]" class="form-control" placeholder="Fragmento (m/z)" required>
+                </div>
+                <div class="col-md-5">
+                    <input type="number" name="fragments[][intensity]" class="form-control" placeholder="Intensidade" required>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger btn-sm remove-fragment w-100">Remover</button>
+                </div>
+            `;
+            fragmentContainer.appendChild(newRow);
+        });
+
+        fragmentContainer.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-fragment')) {
+                e.target.closest('.fragment-row').remove();
+            }
+        });
+    });
+</script>
+
+                <!-- Seção 3: Metadados -->
+                <div class="card mb-4 border-secondary">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Metadados</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Descrição do Método</label>
+                            <input type="text" name="method_description" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Condição Cromatográfica</label>
+                            <input type="text" name="chromatographic_condition" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notas</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Nome do pesquisador, data, observações relevantes..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Adicionar Análise
+                </button>
+            </form>
+        </div>
+        
+        <!-- Tabela de Análises -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Lista de Análises</h3>
+                <span class="badge bg-primary">{{ analytics|length }} análises</span>
+            </div>
+            <div class="table-container">
+                <table class="table table-hover align-middle">
+                    <thead class="sticky-top bg-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Composto</th>
+                            <th>Matriz</th>
+                            <th>Tempo (s)</th>
+                            <th>m/z</th>
+                            <th>Intensidade</th>
+                            <th>Método</th>
+                            <th>Classe</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in analytics %}
+                        <tr>
+                            <td>{{ a.analytics_id }}</td>
+                            <td>
+                                <a href="{{ url_for('view_analytic', analytic_id=a.analytics_id) }}" 
+                                   class="text-decoration-none fw-bold">
+                                    {% if a.compound %}
+                                        {{ a.compound.compound }}
+                                    {% else %}
+                                        ID: {{ a.compound_id }}
+                                    {% endif %}
+                                </a>
+                                {% if a.compound and a.compound.pubchem_url %}
+                                <small class="d-block">
+                                    <a href="{{ a.compound.pubchem_url }}" target="_blank" class="text-muted">
+                                        <i class="bi bi-box-arrow-up-right"></i> PubChem
+                                    </a>
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if a.matrix %}
+                                    {{ a.matrix.organism }}
+                                    <small class="d-block text-muted">{{ a.matrix.plant_tissue }}</small>
+                                {% else %}
+                                    <span class="text-danger">ID: {{ a.matrix_id }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ "%.2f"|format(a.retention_time) if a.retention_time is not none else '-' }}</td>
+                            <td>{{ "%.4f"|format(a.m_z) if a.m_z is not none else '-' }}</td>
+                            <td>{{ "{:,.0f}".format(a.intensity) if a.intensity is not none else '-' }}</td>
+                            <td>
+                                {{ a.instrument_method }}
+                                {% if a.method_description %}
+                                    <small class="d-block text-muted">{{ a.method_description[:30] }}{% if a.method_description|length > 30 %}...{% endif %}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ a.compound_class or '-' }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('edit_analytic', id=a.analytics_id) }}" 
+                                       class="btn btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form action="{{ url_for('delete_analytic', id=a.analytics_id) }}" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-outline-danger" title="Excluir"
+                                                onclick="return confirm('Tem certeza que deseja excluir esta análise?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% if a.notes or a.chromatographic_condition %}
+                        <tr class="details-row">
+                            <td colspan="9">
+                                <div class="px-3 py-2">
+                                    {% if a.chromatographic_condition %}
+                                    <p class="mb-1"><strong>Condições:</strong> {{ a.chromatographic_condition }}</p>
+                                    {% endif %}
+                                    {% if a.notes %}
+                                    <p class="mb-0"><strong>Notas:</strong> {{ a.notes }}</p>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                <div class="alert alert-info mb-0">
+                                    Nenhuma análise encontrada no banco de dados
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
